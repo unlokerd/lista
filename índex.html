@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Lista Simple</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
+    input, button { padding: 10px; margin: 5px; }
+    li { cursor: pointer; }
+    .comprado { text-decoration: line-through; color: gray; }
+  </style>
+</head>
+<body>
+  <h2>🛒 Mi Lista de la Compra</h2>
+  <input id="producto" placeholder="Añadir producto">
+  <button onclick="añadir()">Añadir</button>
+  <ul id="lista"></ul>
+
+  <script>
+    const lista = document.getElementById("lista");
+    const producto = document.getElementById("producto");
+
+    function añadir() {
+      if (producto.value.trim() === "") return;
+      const li = document.createElement("li");
+      li.textContent = producto.value;
+      li.onclick = () => li.classList.toggle("comprado");
+      lista.appendChild(li);
+      producto.value = "";
+    }
+  </script>
+</body>
+</html>
