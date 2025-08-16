@@ -1,113 +1,151 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Lista de la Compra</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- jQuery y jQuery Mobile -->
-  <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile.min.css">
-  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
-  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile.min.js"></script>
-
   <style>
-    body { font-family: sans-serif; }
-    .boton { margin-top: 10px; }
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+    }
+    input, button {
+      margin: 0.3rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    .producto {
+      margin-bottom: 0.5rem;
+    }
+    .lista {
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    .guardadas {
+      margin-top: 2rem;
+    }
   </style>
 </head>
 <body>
+  <h1>🛒 Lista de la Compra</h1>
 
-<div data-role="page" id="home">
-  <div data-role="header" data-position="fixed">
-    <h1>🛒 Lista de la Compra</h1>
+  <h2>Catálogo Consum</h2>
+  <div id="catalogo"></div>
+
+  <h2>Producto Personalizado</h2>
+  <input type="text" id="nombre" placeholder="Nombre" />
+  <input type="number" id="precio" placeholder="Precio (€)" />
+  <button onclick="añadirPersonalizado()">Añadir</button>
+
+  <div class="lista">
+    <h2>Lista Actual</h2>
+    <ul id="lista"></ul>
+    <h3>Total: <span id="total">0.00</span> €</h3>
+    <button onclick="guardarLista()">Guardar Lista</button>
   </div>
 
-  <div data-role="content">
-    <input type="search" id="buscarProducto" placeholder="Buscar producto...">
-    <ul id="resultados" data-role="listview" data-inset="true"></ul>
-
-    <h3>Mi Lista</h3>
-    <ul id="miLista" data-role="listview" data-inset="true"></ul>
-
-    <div class="boton">
-      <a href="#" id="guardarLista" class="ui-btn ui-corner-all ui-icon-check ui-btn-icon-left">Guardar</a>
-      <a href="#" id="cargarLista" class="ui-btn ui-corner-all ui-icon-refresh ui-btn-icon-left">Cargar</a>
-      <a href="#" id="limpiarLista" class="ui-btn ui-corner-all ui-icon-delete ui-btn-icon-left">Limpiar</a>
-    </div>
+  <div class="guardadas">
+    <h2>Listas Guardadas</h2>
+    <div id="listasGuardadas"></div>
   </div>
-</div>
 
-<script>
-  $(document).on("pageinit", "#home", function () {
-    let lista = [];
-
-    const productos = [
-      "Leche", "Pan", "Huevos", "Arroz", "Aceite de oliva", "Tomate frito",
-      "Café", "Yogur", "Queso", "Cerveza", "Agua mineral", "Papel higiénico",
-      "Detergente", "Fruta", "Verdura", "Carne", "Pescado", "Galletas",
-      "Cereales", "Chocolate", "Sal", "Azúcar", "Harina", "Pasta"
+  <script>
+    const catalogoConsum = [
+      { name: "Leche", price: 1.25 },
+      { name: "Pan", price: 0.95 },
+      { name: "Huevos", price: 2.50 }
     ];
 
-    function buscarProductos(query) {
-      const resultados = productos.filter(p => p.toLowerCase().includes(query.toLowerCase()));
-      const $resultados = $('#resultados');
-      $resultados.empty();
-      resultados.forEach(p => {
-        $resultados.append(`<li><a href="#" class="agregar">${p}</a></li>`);
+    let lista = [];
+
+    function renderCatalogo() {
+      const contenedor = document.getElementById("catalogo");
+      catalogoConsum.forEach((p, i) => {
+        const div = document.createElement("div");
+        div.className = "producto";
+        div.innerHTML = `${p.name} - ${p.price.toFixed(2)} € 
+          <button onclick="añadirProducto(${i})">Añadir</button>`;
+        contenedor.appendChild(div);
       });
-      $resultados.listview('refresh');
     }
 
-    $('#buscarProducto').on('input', function () {
-      buscarProductos($(this).val());
-    });
-
-    $(document).on('click', '.agregar', function () {
-      const producto = $(this).text();
-      lista.push(producto);
-      actualizarLista();
-    });
-
-    function actualizarLista() {
-      const $miLista = $('#miLista');
-      $miLista.empty();
-      lista.forEach((p, i) => {
-        $miLista.append(`<li>${p} <a href="#" class="quitar" data-index="${i}">Quitar</a></li>`);
-      });
-      $miLista.listview('refresh');
+    function añadirProducto(i) {
+      lista.push(catalogoConsum[i]);
+      renderLista();
     }
 
-    $(document).on('click', '.quitar', function () {
-      const index = $(this).data('index');
-      lista.splice(index, 1);
-      actualizarLista();
-    });
-
-    $('#guardarLista').click(function () {
-      localStorage.setItem('miListaCompra', JSON.stringify(lista));
-      $.mobile.loading('show', {
-        text: 'Guardando...',
-        textVisible: true,
-        theme: 'b'
-      });
-      setTimeout(() => $.mobile.loading('hide'), 1000);
-    });
-
-    $('#cargarLista').click(function () {
-      const guardada = localStorage.getItem('miListaCompra');
-      if (guardada) {
-        lista = JSON.parse(guardada);
-        actualizarLista();
-      } else {
-        alert('No hay ninguna lista guardada');
+    function añadirPersonalizado() {
+      const nombre = document.getElementById("nombre").value;
+      const precio = parseFloat(document.getElementById("precio").value);
+      if (nombre && !isNaN(precio)) {
+        lista.push({ name: nombre, price: precio });
+        document.getElementById("nombre").value = "";
+        document.getElementById("precio").value = "";
+        renderLista();
       }
-    });
+    }
 
-    $('#limpiarLista').click(function () {
+    function eliminarProducto(index) {
+      lista.splice(index, 1);
+      renderLista();
+    }
+
+    function renderLista() {
+      const ul = document.getElementById("lista");
+      ul.innerHTML = "";
+      let total = 0;
+      lista.forEach((p, i) => {
+        total += p.price;
+        const li = document.createElement("li");
+        li.innerHTML = `${p.name} - ${p.price.toFixed(2)} € 
+          <button onclick="eliminarProducto(${i})">Eliminar</button>`;
+        ul.appendChild(li);
+      });
+      document.getElementById("total").textContent = total.toFixed(2);
+    }
+
+    function guardarLista() {
+      if (lista.length === 0) return;
+      const fecha = new Date().toLocaleString();
+      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
+      listas.push({ fecha, productos: lista });
+      localStorage.setItem("listas", JSON.stringify(listas));
       lista = [];
-      actualizarLista();
-    });
-  });
-</script>
+      renderLista();
+      renderListasGuardadas();
+    }
 
+    function renderListasGuardadas() {
+      const contenedor = document.getElementById("listasGuardadas");
+      contenedor.innerHTML = "";
+      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
+      listas.forEach((l, i) => {
+        const div = document.createElement("div");
+        div.style.marginBottom = "1rem";
+        div.innerHTML = `<strong>${l.fecha}</strong><ul>` +
+          l.productos.map(p => `<li>${p.name} - ${p.price.toFixed(2)} €</li>`).join("") +
+          `</ul><button onclick="eliminarLista(${i})">Eliminar</button>`;
+        contenedor.appendChild(div);
+      });
+    }
+
+    function eliminarLista(index) {
+      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
+      listas.splice(index, 1);
+      localStorage.setItem("listas", JSON.stringify(listas));
+      renderListasGuardadas();
+    }
+
+    renderCatalogo();
+    renderListasGuardadas();
+  </script>
 </body>
 </html>
