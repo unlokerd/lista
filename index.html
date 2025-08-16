@@ -2,150 +2,89 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Lista de la Compra</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mi Lista</title>
   <style>
     body {
-      font-family: sans-serif;
-      margin: 2rem;
-      background: #f9f9f9;
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
       color: #333;
+      margin-bottom: 10px;
     }
-    h1, h2 {
-      color: #2c3e50;
+
+    .container {
+      width: 100%;
+      max-width: 500px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
     }
-    input, button {
-      margin: 0.3rem;
-      padding: 0.5rem;
-      font-size: 1rem;
-    }
-    .producto {
-      margin-bottom: 0.5rem;
-    }
-    .lista {
-      margin-top: 1rem;
-      padding: 1rem;
-      background: #fff;
+
+    input[type="text"] {
+      width: calc(100% - 90px);
+      padding: 10px;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+      font-size: 16px;
     }
-    .guardadas {
-      margin-top: 2rem;
+
+    button {
+      padding: 10px 15px;
+      margin-left: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f0f0f0;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .delete-btn {
+      background-color: #e74c3c;
+      border: none;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      background-color: #c0392b;
     }
   </style>
 </head>
 <body>
-  <h1>🛒 Lista de la Compra</h1>
-
-  <h2>Catálogo Consum</h2>
-  <div id="catalogo"></div>
-
-  <h2>Producto Personalizado</h2>
-  <input type="text" id="nombre" placeholder="Nombre" />
-  <input type="number" id="precio" placeholder="Precio (€)" />
-  <button onclick="añadirPersonalizado()">Añadir</button>
-
-  <div class="lista">
-    <h2>Lista Actual</h2>
-    <ul id="lista"></ul>
-    <h3>Total: <span id="total">0.00</span> €</h3>
-    <button onclick="guardarLista()">Guardar Lista</button>
-  </div>
-
-  <div class="guardadas">
-    <h2>Listas Guardadas</h2>
-    <div id="listasGuardadas"></div>
-  </div>
-
-  <script>
-    const catalogoConsum = [
-      { name: "Leche", price: 1.25 },
-      { name: "Pan", price: 0.95 },
-      { name: "Huevos", price: 2.50 }
-    ];
-
-    let lista = [];
-
-    function renderCatalogo() {
-      const contenedor = document.getElementById("catalogo");
-      catalogoConsum.forEach((p, i) => {
-        const div = document.createElement("div");
-        div.className = "producto";
-        div.innerHTML = `${p.name} - ${p.price.toFixed(2)} € 
-          <button onclick="añadirProducto(${i})">Añadir</button>`;
-        contenedor.appendChild(div);
-      });
-    }
-
-    function añadirProducto(i) {
-      lista.push(catalogoConsum[i]);
-      renderLista();
-    }
-
-    function añadirPersonalizado() {
-      const nombre = document.getElementById("nombre").value;
-      const precio = parseFloat(document.getElementById("precio").value);
-      if (nombre && !isNaN(precio)) {
-        lista.push({ name: nombre, price: precio });
-        document.getElementById("nombre").value = "";
-        document.getElementById("precio").value = "";
-        renderLista();
-      }
-    }
-
-    function eliminarProducto(index) {
-      lista.splice(index, 1);
-      renderLista();
-    }
-
-    function renderLista() {
-      const ul = document.getElementById("lista");
-      ul.innerHTML = "";
-      let total = 0;
-      lista.forEach((p, i) => {
-        total += p.price;
-        const li = document.createElement("li");
-        li.innerHTML = `${p.name} - ${p.price.toFixed(2)} € 
-          <button onclick="eliminarProducto(${i})">Eliminar</button>`;
-        ul.appendChild(li);
-      });
-      document.getElementById("total").textContent = total.toFixed(2);
-    }
-
-    function guardarLista() {
-      if (lista.length === 0) return;
-      const fecha = new Date().toLocaleString();
-      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
-      listas.push({ fecha, productos: lista });
-      localStorage.setItem("listas", JSON.stringify(listas));
-      lista = [];
-      renderLista();
-      renderListasGuardadas();
-    }
-
-    function renderListasGuardadas() {
-      const contenedor = document.getElementById("listasGuardadas");
-      contenedor.innerHTML = "";
-      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
-      listas.forEach((l, i) => {
-        const div = document.createElement("div");
-        div.style.marginBottom = "1rem";
-        div.innerHTML = `<strong>${l.fecha}</strong><ul>` +
-          l.productos.map(p => `<li>${p.name} - ${p.price.toFixed(2)} €</li>`).join("") +
-          `</ul><button onclick="eliminarLista(${i})">Eliminar</button>`;
-        contenedor.appendChild(div);
-      });
-    }
-
-    function eliminarLista(index) {
-      const listas = JSON.parse(localStorage.getItem("listas") || "[]");
-      listas.splice(index, 1);
-      localStorage.setItem("listas", JSON.stringify(listas));
-      renderListasGuardadas();
-    }
-
-    renderCatalogo();
-    renderListasGuardadas();
-  </script>
-</body>
-</html>
+  <h1>📝 Mi Lista</h1>
+  <div class="container">
+    <div style="display: flex;">
+      <input type="text" id="itemInput" placeholder="Añadir artículo..." />
+      <button onclick="addItem
