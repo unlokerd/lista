@@ -1,33 +1,105 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Mi Lista Simple</title>
+  <meta charset="utf-8">
+  <title>Lista de la Compra</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- jQuery Mobile -->
+  <link rel="stylesheet" href="https://code.jquery.com/mobile/1.4.5/jquery.mobile.min.css">
+  <script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+  <script src="https://code.jquery.com/mobile/1.4.5/jquery.mobile.min.js"></script>
+
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 20px; }
-    input, button { padding: 10px; margin: 5px; }
-    li { cursor: pointer; }
-    .comprado { text-decoration: line-through; color: gray; }
+    body { font-family: sans-serif; }
+    .producto { font-weight: bold; }
+    .boton { margin-top: 10px; }
   </style>
-</head>
-<body>
-  <h2>🛒 Mi Lista de la Compra</h2>
-  <input id="producto" placeholder="Añadir producto">
-  <button onclick="añadir()">Añadir</button>
-  <ul id="lista"></ul>
 
   <script>
-    const lista = document.getElementById("lista");
-    const producto = document.getElementById("producto");
+    $(document).ready(function () {
+      let lista = [];
 
-    function añadir() {
-      if (producto.value.trim() === "") return;
-      const li = document.createElement("li");
-      li.textContent = producto.value;
-      li.onclick = () => li.classList.toggle("comprado");
-      lista.appendChild(li);
-      producto.value = "";
-    }
+      const productos = [
+        "Leche", "Pan", "Huevos", "Arroz", "Aceite de oliva", "Tomate frito",
+        "Café", "Yogur", "Queso", "Cerveza", "Agua mineral", "Papel higiénico",
+        "Detergente", "Fruta", "Verdura", "Carne", "Pescado", "Galletas",
+        "Cereales", "Chocolate", "Sal", "Azúcar", "Harina", "Pasta"
+      ];
+
+      function buscarProductos(query) {
+        const resultados = productos.filter(p => p.toLowerCase().includes(query.toLowerCase()));
+        $('#resultados').empty();
+        resultados.forEach(p => {
+          $('#resultados').append(`<li><a href="#" class="agregar">${p}</a></li>`);
+        });
+        $('#resultados').listview('refresh');
+      }
+
+      $('#buscarProducto').on('input', function () {
+        buscarProductos($(this).val());
+      });
+
+      $(document).on('click', '.agregar', function () {
+        const producto = $(this).text();
+        lista.push(producto);
+        actualizarLista();
+      });
+
+      function actualizarLista() {
+        $('#miLista').empty();
+        lista.forEach((p, i) => {
+          $('#miLista').append(`<li>${p} <a href="#" class="quitar" data-index="${i}">Quitar</a></li>`);
+        });
+        $('#miLista').listview('refresh');
+      }
+
+      $(document).on('click', '.quitar', function () {
+        const index = $(this).data('index');
+        lista.splice(index, 1);
+        actualizarLista();
+      });
+
+      $('#guardarLista').click(function () {
+        localStorage.setItem('miListaCompra', JSON.stringify(lista));
+        alert('Lista guardada');
+      });
+
+      $('#cargarLista').click(function () {
+        const guardada = localStorage.getItem('miListaCompra');
+        if (guardada) {
+          lista = JSON.parse(guardada);
+          actualizarLista();
+        } else {
+          alert('No hay ninguna lista guardada');
+        }
+      });
+
+      $('#limpiarLista').click(function () {
+        lista = [];
+        actualizarLista();
+      });
+    });
   </script>
+</head>
+<body>
+
+<div data-role="page" id="home">
+  <div data-role="header"><h1>🛒 Lista de la Compra</h1></div>
+
+  <div data-role="content">
+    <input type="search" id="buscarProducto" placeholder="Buscar producto...">
+    <ul id="resultados" data-role="listview" data-inset="true"></ul>
+
+    <h3>Mi Lista</h3>
+    <ul id="miLista" data-role="listview" data-inset="true"></ul>
+
+    <div class="boton">
+      <button id="guardarLista" class="ui-btn ui-btn-inline ui-corner-all ui-icon-check ui-btn-icon-left">Guardar</button>
+      <button id="cargarLista" class="ui-btn ui-btn-inline ui-corner-all ui-icon-refresh ui-btn-icon-left">Cargar</button>
+      <button id="limpiarLista" class="ui-btn ui-btn-inline ui-corner-all ui-icon-delete ui-btn-icon-left">Limpiar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
